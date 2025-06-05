@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"flag"
 	"fmt"
 	"log/slog"
 	"os"
@@ -45,7 +46,11 @@ func main() {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	var cfg Config
-	readFile(&cfg)
+
+	path := flag.String("config", "config.yml", "path to the config file")
+	flag.Parse()
+
+	readFile(path, &cfg)
 	readEnv(&cfg)
 
 	signalChan := make(chan os.Signal, 1)
@@ -137,12 +142,14 @@ func sub(client mqtt.Client, topic string) {
 	slog.Info("Subscribed to topic", "topic", topic)
 }
 
-func readFile(cfg *Config) error {
-	f, err := os.Open("config.yml")
+func readFile(path *string, cfg *Config) error {
+	f, err := os.Open(*path)
 	if err != nil {
+		slog.Error("unable to open config", "file", *path, "err", err)
 		return err
 	}
 	defer f.Close()
+	slog.Info("loading config file", "file", *path)
 
 	decoder := yaml.NewDecoder(f)
 	return decoder.Decode(cfg)
