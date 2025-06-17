@@ -6,6 +6,7 @@ require github.com/jackc/pgx/v5 v5.7.5
 
 require (
 	github.com/gorilla/websocket v1.5.3 // indirect
+	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/sync v0.13.0 // indirect

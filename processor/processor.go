@@ -22,15 +22,18 @@ type Processor struct {
 
 func (p *Processor) OnMessage(client mqtt.Client, msg mqtt.Message) {
 	if strings.HasSuffix(msg.Topic(), "grademap") {
-		slog.Info("New grademap")
-
 		p.grademap.Update(msg.Payload())
+		slog.Info("New grademap", "name", p.grademap.Name)
 	} else if strings.HasSuffix(msg.Topic(), "fruit") {
 		var f Fruit
 		json.Unmarshal(msg.Payload(), &f)
 		p.grademap.Grade(&f)
 
 		slog.Debug("New fruit", "carrier", f.CarrierId)
+		if len(f.PrimaryDefect) > 3 {
+			slog.Warn("PrimaryDefect too long", "pd", f.PrimaryDefect, "fruit", f)
+			f.PrimaryDefect = f.PrimaryDefect[:3]
+		}
 
 		p.queue <- f
 		p.counter.Add(1)

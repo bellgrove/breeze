@@ -2,6 +2,7 @@ package processor
 
 import (
 	"encoding/json"
+	"log/slog"
 	"math"
 	"time"
 )
@@ -349,7 +350,11 @@ func (a *Fruit) UnmarshalJSON(b []byte) error {
 		a.MTimer = breeze.Spectrim.Timer
 	}
 
-	a.ProcessingTime = time.Duration(int(math.Round(1000000 * breeze.Spectrim.Timer["Total time for fruit processing"].(float64))))
+	if breeze.Spectrim.Timer["Total time for fruit processing"] != nil {
+		a.ProcessingTime = time.Duration(int(math.Round(1000000 * breeze.Spectrim.Timer["Total time for fruit processing"].(float64))))
+	} else {
+		slog.Warn("Invalid fruit processing time", "raw", b)
+	}
 	// a.OtherDefects = []string{"ABCD"}
 	return nil
 }

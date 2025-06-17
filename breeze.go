@@ -13,14 +13,14 @@ import (
 	"github.com/bellgrove/breeze/processor"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kelseyhightower/envconfig"
 	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
 	MQTT struct {
-		Host string `yaml:"host" envconfig:"SERVER_HOST"`
-		Port int    `yaml:"port" envconfig:"SERVER_PORT"`
+		URI  string `yaml:"uri" envconfig:"SERVER_URI"`
 		User string `yaml:"user" envconfig:"SERVER_USER"`
 		Pass string `yaml:"pass" envconfig:"SERVER_PASS"`
 	} `yaml:"mqtt"`
@@ -43,6 +43,8 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 }
 
 func main() {
+	// slog.SetLogLoggerLevel(slog.LevelDebug)
+
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	var cfg Config
@@ -77,21 +79,29 @@ func main() {
 }
 
 func run(ctx context.Context, _ []string, cfg *Config) error {
-	conn, err := pgx.Connect(ctx, cfg.Database.URL)
+	// conn, err := pgx.Connect(ctx, cfg.Database.URL)
+	config, err := pgxpool.ParseConfig(cfg.Database.URL)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to parse db config: %v\n", err)
+		os.Exit(1)
+	}
+
+	// config.MaxConnIdleTime =
+	pool, err := pgxpool.NewWithConfig(ctx, config)
+
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
 		os.Exit(1)
 	}
-	defer conn.Close(ctx)
+	defer pool.Close()
 
 	next_batch := make(chan bool)
 	defer close(next_batch)
 	var proc = processor.Create(next_batch)
 
-	var broker = cfg.MQTT.Host
-	var port = cfg.MQTT.Port
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("ssl://%s:%d", broker, port))
+	slog.Info(cfg.MQTT.URI)
+	opts.AddBroker(cfg.MQTT.URI)
 
 	token := make([]byte, 6)
 	rand.Read(token)
@@ -118,16 +128,17 @@ func run(ctx context.Context, _ []string, cfg *Config) error {
 			client.Disconnect(250)
 			return nil
 		case <-next_batch:
-			slog.Info("New write")
-			rows, err := conn.CopyFrom(
+			// slog.Info("New write")
+			rows, err := pool.CopyFrom(
 				ctx,
 				pgx.Identifier{"breeze_fruit"},
 				processor.Columns(),
 				&proc)
 			if err != nil {
 				slog.Error("Failed to write", "err", err, "count", rows)
+
 			} else {
-				slog.Info("Wrote rows", "count", rows)
+				slog.Debug("Wrote rows", "count", rows)
 			}
 			// default:
 			// 	// do a piece of work
