@@ -122,27 +122,32 @@ func (g *Grademap) Grade(f *Fruit) {
 	// A -> 3
 	// B -> 2
 	// len(grades) = 5
-	idx := -1
-	if len(f.VisionGrade) >= 1 {
-		idx = len(g.Grades) - int(f.VisionGrade[0]-'A') - 2
-	}
-	if idx < 0 || idx >= len(g.Grades)-1 {
-		slog.Error("invalid fruit grade", "vision_grade", f.VisionGrade)
-		return
-	}
+	// idx := -1
+	// if len(f.VisionGrade) >= 1 {
+	// 	idx = len(g.Grades) - int(f.VisionGrade[0]-'A') - 2
+	// }
+	// if idx < 0 || idx >= len(g.Grades)-1 {
+	// 	slog.Error("invalid fruit grade", "vision_grade", f.VisionGrade)
+	// 	return
+	// }
 
 	codes := make([]string, 0, 8)
 	reasons := make([]string, 0, 8)
 
-	for _, v := range g.Grades[idx].Criteria {
-		for _, v2 := range v.Criteria {
-			if v2.Check(f) {
-				reasons = append(reasons, v.Name)
-				if !slices.Contains(codes, v.Code) {
-					codes = append(codes, v.Code)
+	for idx := range len(g.Grades) {
+		for _, v := range g.Grades[idx].Criteria {
+			for _, v2 := range v.Criteria {
+				if v2.Check(f) {
+					reasons = append(reasons, v.Name)
+					if !slices.Contains(codes, v.Code) {
+						codes = append(codes, v.Code)
+					}
+					break
 				}
-				break
 			}
+		}
+		if len(codes) > 0 {
+			break
 		}
 	}
 	if len(codes) == 0 {

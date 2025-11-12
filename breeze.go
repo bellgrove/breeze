@@ -36,6 +36,9 @@ const (
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 	slog.Info("Connected")
+
+	sub(client, "tomra/211632/fruit")
+	sub(client, "tomra/211632/grademap")
 }
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
@@ -116,9 +119,6 @@ func run(ctx context.Context, _ []string, cfg *Config) error {
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
-
-	sub(client, "tomra/211632/fruit")
-	sub(client, "tomra/211632/grademap")
 
 	slog.Info("Hello, World!")
 
