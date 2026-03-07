@@ -59,7 +59,12 @@ Plans:
   1. Every MQTT grademap message results in a row in `breeze_grademap` with the payload and the timestamp at which Breeze received it
   2. For each grademap update, `breeze_grademap_changes` contains one row per changed field showing the old and new values — enabling queries like "show all threshold changes this month"
   3. Grademap writes do not block MQTT message delivery — `OnMessage` returns immediately regardless of database latency
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Write failing test stubs for GRAD-01, GRAD-02, GRAD-03 (Nyquist wave 0)
+- [ ] 03-02-PLAN.md — Implement DiffGrademaps and add gradeCh channel to Processor
+- [ ] 03-03-PLAN.md — Add schema DDL, define Go constants, wire gradeCh into run() with INSERT and CopyFrom
 
 ### Phase 4: Timing Reconciliation
 **Goal**: Each fruit record is attributed to the exact historical grademap that the OEM used to grade it, accounting for the OEM's pipeline delay between publishing a new grademap and applying it to fruit in transit
@@ -81,5 +86,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Code Cleanup | 3/3 | Complete   | 2026-03-07 |
 | 2. Write Buffer and Reconnect | 3/3 | Complete   | 2026-03-07 |
-| 3. Grademap Persistence | 0/? | Not started | - |
+| 3. Grademap Persistence | 0/3 | Not started | - |
 | 4. Timing Reconciliation | 0/? | Not started | - |
