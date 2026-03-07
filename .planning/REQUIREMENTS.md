@@ -11,7 +11,7 @@
 - [x] **QUAL-02**: `Processor` counter decrements after channel read, not before (fix counter/channel race)
 - [x] **QUAL-03**: `json.Unmarshal` errors in `OnMessage` are logged, not silently swallowed
 - [x] **QUAL-04**: Shutdown defer order in `run()` is corrected — MQTT disconnect before pool close
-- [ ] **QUAL-05**: General code review and cleanup (dead code, commented-out imports, style)
+- [x] **QUAL-05**: General code review and cleanup (dead code, commented-out imports, style)
 
 ### Database Reconnection
 
@@ -59,7 +59,7 @@
 | QUAL-02 | Phase 1 | Complete |
 | QUAL-03 | Phase 1 | Complete |
 | QUAL-04 | Phase 1 | Complete |
-| QUAL-05 | Phase 1 | Pending |
+| QUAL-05 | Phase 1 | Complete |
 | RECO-01 | Phase 2 | Pending |
 | RECO-02 | Phase 2 | Pending |
 | RECO-03 | Phase 2 | Pending |
