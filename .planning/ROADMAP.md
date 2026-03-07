@@ -73,18 +73,23 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. Each fruit row in TimescaleDB is linked to the `breeze_grademap` row that was active when the OEM graded it — not simply the most recently received grademap
   2. A configurable `grademap_propagation_delay` offset can be set in the YAML config to compensate for OEM pipeline lag; setting it to zero disables the offset with no behavioral change
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Write failing test stubs for TIME-01 and TIME-02 (Nyquist wave 0)
+- [ ] 04-02-PLAN.md — Implement resolveGrademapID, add GrademapPropagationDelayStr to Config, add GrademapID to Fruit struct
+- [ ] 04-03-PLAN.md — Wire delay into writeBatch/flushBuffer/run(), add grademap_id DDL to schema.sql
 
 ## Progress
 
 **Execution Order:**
 Phases execute in numeric order: 1 → 2 → 3 → 4
 
-**Note on Phase 4:** Phase 4 requires a live OEM traffic investigation before planning begins. Inspect fruit JSON payloads for a grademap version/sequence field. If found (Path A), use it directly. If not found (Path B), implement the configurable delay offset. Document the finding before planning Phase 4 implementation.
+**Note on Phase 4:** Investigation complete (2026-03-08) — Path B confirmed. No grademap version field in fruit payload. Implementation uses configurable delay offset for AS-OF timestamp lookups.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Code Cleanup | 3/3 | Complete   | 2026-03-07 |
 | 2. Write Buffer and Reconnect | 3/3 | Complete   | 2026-03-07 |
 | 3. Grademap Persistence | 3/3 | Complete   | 2026-03-07 |
-| 4. Timing Reconciliation | 0/? | Not started | - |
+| 4. Timing Reconciliation | 0/3 | Not started | - |
