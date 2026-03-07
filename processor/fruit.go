@@ -2,6 +2,7 @@ package processor
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"math"
 	"time"
@@ -272,7 +273,9 @@ func (a *Fruit) UnmarshalJSON(b []byte) error {
 	}
 
 	// var f any
-	json.Unmarshal(b, &breeze)
+	if err := json.Unmarshal(b, &breeze); err != nil {
+		return fmt.Errorf("failed to parse fruit payload: %w", err)
+	}
 	a.CarrierId = breeze.CarrierId
 	a.SchemaVer = breeze.Sizer.Schema.Version
 	a.Status = breeze.Sizer.Status

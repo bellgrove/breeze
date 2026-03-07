@@ -100,7 +100,7 @@ func run(ctx context.Context, _ []string, cfg *Config) error {
 
 	next_batch := make(chan bool)
 	defer close(next_batch)
-	var proc = processor.Create(next_batch)
+	var proc = processor.Create(next_batch, 50)
 
 	opts := mqtt.NewClientOptions()
 	slog.Info(cfg.MQTT.URI)

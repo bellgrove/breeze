@@ -22,11 +22,16 @@ type Processor struct {
 
 func (p *Processor) OnMessage(client mqtt.Client, msg mqtt.Message) {
 	if strings.HasSuffix(msg.Topic(), "grademap") {
-		p.grademap.Update(msg.Payload())
+		if err := p.grademap.Update(msg.Payload()); err != nil {
+			slog.Error("Failed to parse grademap", "err", err)
+		}
 		slog.Info("New grademap", "name", p.grademap.Name)
 	} else if strings.HasSuffix(msg.Topic(), "fruit") {
 		var f Fruit
-		json.Unmarshal(msg.Payload(), &f)
+		if err := json.Unmarshal(msg.Payload(), &f); err != nil {
+			slog.Error("Failed to parse fruit", "err", err)
+			return
+		}
 		p.grademap.Grade(&f)
 
 		slog.Debug("New fruit", "carrier", f.CarrierId)
@@ -35,9 +40,13 @@ func (p *Processor) OnMessage(client mqtt.Client, msg mqtt.Message) {
 			f.PrimaryDefect = f.PrimaryDefect[:3]
 		}
 
-		p.queue <- f
-		p.counter.Add(1)
-		p.timer <- true
+		select {
+		case p.queue <- f:
+			p.counter.Add(1)
+			p.timer <- true
+		default:
+			slog.Warn("Dropped fruit", "carrier", f.CarrierId)
+		}
 	} else {
 		slog.Warn("Unknown message", "topic", msg.Topic(), "msg", msg.Payload())
 	}
@@ -72,7 +81,7 @@ const (
 	maxItems   = 30
 )
 
-func Create(next chan bool) Processor {
+func Create(next chan bool, queueSize int) Processor {
 	timer := make(chan bool, 1)
 
 	go func() {
@@ -112,7 +121,7 @@ func Create(next chan bool) Processor {
 
 	return Processor{
 		timer,
-		make(chan Fruit, 50),
+		make(chan Fruit, queueSize),
 		atomic.Int32{},
 		// Fruit{},
 		Grademap{},
