@@ -28,7 +28,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. A malformed fruit JSON payload is logged with its raw content and discarded; no zero-value fruit row is written to the database
   3. On a clean shutdown, all fruit records queued at signal time are flushed to the database before the connection pool closes
   4. The fruit counter in `Processor` accurately reflects the number of records available to read (no race between counter and channel)
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Write failing unit test stubs for QUAL-01, QUAL-02, QUAL-03 (Nyquist wave 0)
+- [ ] 01-02-PLAN.md — Fix OnMessage blocking send, UnmarshalJSON error propagation, Values() counter race, shutdown defer order, and extend Config
+- [ ] 01-03-PLAN.md — Remove dead code, run go mod tidy, write code review note
 
 ### Phase 2: Write Buffer and Reconnect
 **Goal**: Fruit records are never lost during a PostgreSQL outage — they buffer in memory and flush automatically when the connection is restored
@@ -69,7 +74,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Code Cleanup | 0/? | Not started | - |
+| 1. Code Cleanup | 0/3 | Not started | - |
 | 2. Write Buffer and Reconnect | 0/? | Not started | - |
 | 3. Grademap Persistence | 0/? | Not started | - |
 | 4. Timing Reconciliation | 0/? | Not started | - |
