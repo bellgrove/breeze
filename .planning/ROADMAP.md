@@ -13,7 +13,7 @@ Breeze has a working baseline; this milestone hardens it into a production-relia
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Code Cleanup** - Fix four existing bugs that become compounding problems once write buffering is added (completed 2026-03-07)
-- [ ] **Phase 2: Write Buffer and Reconnect** - Eliminate fruit data loss during PostgreSQL outages
+- [x] **Phase 2: Write Buffer and Reconnect** - Eliminate fruit data loss during PostgreSQL outages (completed 2026-03-07)
 - [ ] **Phase 3: Grademap Persistence** - Store every received grademap with timestamps for audit and reconciliation
 - [ ] **Phase 4: Timing Reconciliation** - Match each fruit record to the correct historical grademap
 
@@ -80,6 +80,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Code Cleanup | 3/3 | Complete   | 2026-03-07 |
-| 2. Write Buffer and Reconnect | 2/3 | In Progress|  |
+| 2. Write Buffer and Reconnect | 3/3 | Complete   | 2026-03-07 |
 | 3. Grademap Persistence | 0/? | Not started | - |
 | 4. Timing Reconciliation | 0/? | Not started | - |

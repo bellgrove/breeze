@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 02-write-buffer-and-reconnect-02-PLAN.md
-last_updated: "2026-03-07T20:36:29.754Z"
+stopped_at: Completed 02-write-buffer-and-reconnect-03-PLAN.md
+last_updated: "2026-03-07T20:41:24.659Z"
 last_activity: 2026-03-07 — Roadmap created
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 0
 ---
 
@@ -55,6 +55,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-code-cleanup P03 | 4m | 2 tasks | 8 files |
 | Phase 02-write-buffer-and-reconnect P01 | 8m | 2 tasks | 3 files |
 | Phase 02-write-buffer-and-reconnect P02 | 8 | 1 tasks | 2 files |
+| Phase 02-write-buffer-and-reconnect P03 | 2m | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,8 @@ Recent decisions affecting current work:
 - [Phase 01-code-cleanup]: slog.SetLogLoggerLevel used for log level wiring — matches existing slog usage pattern
 - [Phase 02-write-buffer-and-reconnect]: Committed DrainFruits implementation with drain_test.go — both were in working tree from prior session; test requires the implementation to compile
 - [Phase 02-write-buffer-and-reconnect]: DrainFruits is a package-level function (not method) so run() can call it by name; counter.Load() snapshots stable count since only called from single-goroutine select loop
+- [Phase 02-write-buffer-and-reconnect]: nil pool panics in pgx.BeginTxFunc — TestTransactionalWrite uses closed pool instead of nil to exercise error path
+- [Phase 02-write-buffer-and-reconnect]: Graceful shutdown abandons buffered records (ctx.Done()) — no flush attempt, DB may still be down, acceptable per design
 
 ### Pending Todos
 
@@ -83,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-07T20:36:29.750Z
-Stopped at: Completed 02-write-buffer-and-reconnect-02-PLAN.md
+Last session: 2026-03-07T20:41:24.655Z
+Stopped at: Completed 02-write-buffer-and-reconnect-03-PLAN.md
 Resume file: None
