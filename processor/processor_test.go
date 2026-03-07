@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"bytes"
 	"testing"
 	"time"
 )
@@ -193,5 +194,59 @@ func TestOnMessage_MalformedJSON(t *testing.T) {
 	// No fruit should have been enqueued.
 	if got := p.counter.Load(); got != 0 {
 		t.Errorf("OnMessage_MalformedJSON: counter = %d after malformed payload, want 0 — QUAL-03 not yet fixed (zero-value fruit was enqueued)", got)
+	}
+}
+
+// TestOnMessage_GrademapChannel verifies GRAD-02: after a grademap-topic
+// OnMessage call the processor exposes the raw payload via a GradeCh()
+// channel, and the call returns immediately even when the channel is full.
+//
+// GradeCh() added by Plan 02 — this test is intentionally RED until then.
+func TestOnMessage_GrademapChannel(t *testing.T) {
+	p := newTestProcessorSmallQueue(5)
+
+	payload := []byte(`{"Name":"GM1"}`)
+
+	// OnMessage must not block; run it with a 200 ms timeout.
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		p.OnMessage(nil, mockMsg{topic: "tomra/211632/grademap", payload: payload})
+	}()
+	select {
+	case <-done:
+		// returned without blocking — good
+	case <-time.After(200 * time.Millisecond):
+		t.Fatal("OnMessage blocked on grademap topic — expected non-blocking call")
+	}
+
+	// GradeCh() must return a channel with at least one queued item.
+	ch := p.GradeCh()
+	if len(ch) < 1 {
+		t.Fatalf("GradeCh(): expected at least 1 item, got %d", len(ch))
+	}
+
+	received := <-ch
+	if !bytes.Equal(received, payload) {
+		t.Errorf("GradeCh() item = %q, want %q", received, payload)
+	}
+
+	// Verify that OnMessage does not block when the gradeCh is already full
+	// (buffer=1, occupied). Fill it first then send another grademap message.
+	p2 := newTestProcessorSmallQueue(5)
+	// Pre-fill: send one grademap to occupy the buffer.
+	p2.OnMessage(nil, mockMsg{topic: "tomra/211632/grademap", payload: payload})
+
+	// Second send — must not block even though channel is full.
+	done2 := make(chan struct{})
+	go func() {
+		defer close(done2)
+		p2.OnMessage(nil, mockMsg{topic: "tomra/211632/grademap", payload: []byte(`{"Name":"GM2"}`)})
+	}()
+	select {
+	case <-done2:
+		// non-blocking — good
+	case <-time.After(200 * time.Millisecond):
+		t.Fatal("OnMessage blocked on full gradeCh — GRAD-02 not yet implemented (Plan 02)")
 	}
 }
