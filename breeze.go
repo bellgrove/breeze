@@ -20,6 +20,22 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const grademapDDL = `CREATE TABLE breeze_grademap (
+    id          BIGSERIAL PRIMARY KEY,
+    received_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    payload     JSONB NOT NULL
+);`
+
+const grademapChangesDDL = `CREATE TABLE breeze_grademap_changes (
+    id           BIGSERIAL PRIMARY KEY,
+    grademap_id  BIGINT NOT NULL REFERENCES breeze_grademap(id),
+    entity_type  TEXT NOT NULL,
+    entity_name  TEXT NOT NULL,
+    field        TEXT NOT NULL,
+    old_value    TEXT,
+    new_value    TEXT NOT NULL
+);`
+
 type Config struct {
 	MQTT struct {
 		URI  string `yaml:"uri"  envconfig:"SERVER_URI"`

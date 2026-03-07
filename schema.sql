@@ -71,6 +71,27 @@ WITH
     );
 CALL add_columnstore_policy('breeze_fruit', after => INTERVAL '3d');
 
+CREATE TABLE breeze_grademap (
+    id          BIGSERIAL PRIMARY KEY,
+    received_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    payload     JSONB NOT NULL
+);
+
+CREATE INDEX breeze_grademap_received_at_idx ON breeze_grademap (received_at DESC);
+
+CREATE TABLE breeze_grademap_changes (
+    id           BIGSERIAL PRIMARY KEY,
+    grademap_id  BIGINT NOT NULL REFERENCES breeze_grademap(id),
+    entity_type  TEXT NOT NULL,
+    entity_name  TEXT NOT NULL,
+    field        TEXT NOT NULL,
+    old_value    TEXT,
+    new_value    TEXT NOT NULL
+);
+
+CREATE INDEX breeze_grademap_changes_grademap_id_idx ON breeze_grademap_changes (grademap_id);
+CREATE INDEX breeze_grademap_changes_field_idx ON breeze_grademap_changes (field);
+
 
 
 
