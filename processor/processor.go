@@ -11,11 +11,18 @@ import (
 )
 
 type Processor struct {
-	timer   chan bool
-	queue   chan Fruit
+	timer    chan bool
+	queue    chan Fruit
 	counter  atomic.Int32
 	grademap Grademap
+	gradeCh  chan []byte
 }
+
+// GradeCh returns a read-only channel that receives a copy of the raw
+// grademap payload each time a grademap MQTT message is processed.
+// The channel is buffered (size 1); when it is already full the payload
+// is dropped and a warning is logged.
+func (p *Processor) GradeCh() <-chan []byte { return p.gradeCh }
 
 func (p *Processor) OnMessage(client mqtt.Client, msg mqtt.Message) {
 	if strings.HasSuffix(msg.Topic(), "grademap") {
@@ -23,6 +30,13 @@ func (p *Processor) OnMessage(client mqtt.Client, msg mqtt.Message) {
 			slog.Error("Failed to parse grademap", "err", err)
 		}
 		slog.Info("New grademap", "name", p.grademap.Name)
+		rawPayload := make([]byte, len(msg.Payload()))
+		copy(rawPayload, msg.Payload())
+		select {
+		case p.gradeCh <- rawPayload:
+		default:
+			slog.Warn("Dropped grademap update — channel full")
+		}
 	} else if strings.HasSuffix(msg.Topic(), "fruit") {
 		var f Fruit
 		if err := json.Unmarshal(msg.Payload(), &f); err != nil {
@@ -124,9 +138,10 @@ func Create(next chan bool, queueSize int) Processor {
 	}()
 
 	return Processor{
-		timer,
-		make(chan Fruit, queueSize),
-		atomic.Int32{},
-		Grademap{},
+		timer:    timer,
+		queue:    make(chan Fruit, queueSize),
+		counter:  atomic.Int32{},
+		grademap: Grademap{},
+		gradeCh:  make(chan []byte, 1),
 	}
 }

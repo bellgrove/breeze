@@ -34,6 +34,7 @@ func newTestProcessorSmallQueue(queueSize int) Processor {
 		timer:    timer,
 		queue:    make(chan Fruit, queueSize),
 		grademap: Grademap{},
+		gradeCh:  make(chan []byte, 1),
 	}
 }
 
