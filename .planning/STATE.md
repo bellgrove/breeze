@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 03-grademap-persistence-02-PLAN.md
-last_updated: "2026-03-07T23:16:14.265Z"
+stopped_at: Completed 03-grademap-persistence-03-PLAN.md
+last_updated: "2026-03-07T23:21:26.182Z"
 last_activity: 2026-03-07 — Roadmap created
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 9
-  completed_plans: 8
+  completed_plans: 9
   percent: 0
 ---
 
@@ -58,6 +58,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02-write-buffer-and-reconnect P03 | 2m | 2 tasks | 2 files |
 | Phase 03-grademap-persistence P01 | 3m | 3 tasks | 4 files |
 | Phase 03-grademap-persistence P02 | 15m | 1 tasks | 3 files |
+| Phase 03-grademap-persistence P03 | 4m | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -82,6 +83,8 @@ Recent decisions affecting current work:
 - [Phase 03-grademap-persistence]: containerEntityTypes map is explicit (not heuristic) — unknown top-level map keys get entity_type 'unknown'
 - [Phase 03-grademap-persistence]: DiffGrademaps returns nil (not empty slice) when no changes — callers check len > 0
 - [Phase 03-grademap-persistence]: gradeCh initialised in both Create() and newTestProcessorSmallQueue — test helper bypasses Create()
+- [Phase 03-grademap-persistence]: prevGrademapPayload not updated on INSERT failure — diff self-corrects on next successful write
+- [Phase 03-grademap-persistence]: CopyFrom error for breeze_grademap_changes is non-fatal — audit log pattern, grademap row already committed
 
 ### Pending Todos
 
@@ -93,6 +96,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-07T23:16:14.260Z
-Stopped at: Completed 03-grademap-persistence-02-PLAN.md
+Last session: 2026-03-07T23:21:26.178Z
+Stopped at: Completed 03-grademap-persistence-03-PLAN.md
 Resume file: None
