@@ -44,7 +44,12 @@ Plans:
   2. When the buffer reaches its configured maximum, the oldest records are dropped and a warning is logged per dropped record
   3. When the database comes back up, all buffered records are automatically flushed to TimescaleDB without operator intervention
   4. A batch write that fails mid-copy leaves no partial rows in the database — the batch either commits fully or is retried intact
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Write failing test stubs for RECO-01 through RECO-04 and DrainFruits (Nyquist wave 0)
+- [ ] 02-02-PLAN.md — Add processor.DrainFruits to expose []Fruit from internal queue
+- [ ] 02-03-PLAN.md — Implement write buffer, reconnect probe, and transactional CopyFrom in breeze.go
 
 ### Phase 3: Grademap Persistence
 **Goal**: Every grademap received from MQTT is stored in TimescaleDB with its receipt timestamp and a queryable change log, forming the foundation for timing reconciliation and audit queries
@@ -75,6 +80,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Code Cleanup | 3/3 | Complete   | 2026-03-07 |
-| 2. Write Buffer and Reconnect | 0/? | Not started | - |
+| 2. Write Buffer and Reconnect | 0/3 | Not started | - |
 | 3. Grademap Persistence | 0/? | Not started | - |
 | 4. Timing Reconciliation | 0/? | Not started | - |
