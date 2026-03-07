@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log/slog"
@@ -122,6 +123,49 @@ func flushBuffer(ctx context.Context, pool *pgxpool.Pool, buf []processor.Fruit)
 		slog.Info("Flushed buffer", "count", n)
 		return nil
 	})
+}
+
+// writeGrademap inserts a raw grademap payload into breeze_grademap and writes
+// per-field change rows to breeze_grademap_changes. prev may be nil on the first
+// call (all fields treated as new). prevGrademapPayload must only be updated by
+// the caller on nil error return (not on failure) so the diff baseline stays accurate.
+//
+// Returns the parsed map for use as the next prev, and any error from the INSERT.
+// A CopyFrom error for changes is logged but does not propagate (audit log, not data).
+func writeGrademap(ctx context.Context, pool *pgxpool.Pool, payload []byte, prev map[string]any) (map[string]any, error) {
+	var grademapID int64
+	err := pool.QueryRow(ctx,
+		`INSERT INTO breeze_grademap (received_at, payload) VALUES ($1, $2) RETURNING id`,
+		time.Now(),
+		payload,
+	).Scan(&grademapID)
+	if err != nil {
+		return nil, fmt.Errorf("insert breeze_grademap: %w", err)
+	}
+
+	var current map[string]any
+	if jsonErr := json.Unmarshal(payload, &current); jsonErr != nil {
+		slog.Error("Failed to unmarshal grademap for diff", "err", jsonErr)
+		return current, nil // grademap row written; skip diff
+	}
+
+	changes := processor.DiffGrademaps(prev, current)
+	if len(changes) > 0 {
+		changeRows := make([][]any, len(changes))
+		for i, c := range changes {
+			changeRows[i] = []any{grademapID, c.EntityType, c.EntityName, c.Field, c.OldValue, c.NewValue}
+		}
+		if _, copyErr := pool.CopyFrom(ctx,
+			pgx.Identifier{"breeze_grademap_changes"},
+			[]string{"grademap_id", "entity_type", "entity_name", "field", "old_value", "new_value"},
+			pgx.CopyFromRows(changeRows),
+		); copyErr != nil {
+			slog.Error("Failed to write grademap changes", "err", copyErr)
+			// Non-fatal: grademap row was written; diff self-corrects on next update
+		}
+	}
+
+	return current, nil
 }
 
 // startReconnectProbe launches a background goroutine that pings the DB with
@@ -251,10 +295,11 @@ func run(ctx context.Context, _ []string, cfg *Config) error {
 
 	// Write buffer state
 	var (
-		writeBuffer  []processor.Fruit
-		dbHealthy    = true
-		probeRunning = false
-		reconnectCh  = make(chan struct{}, 1)
+		writeBuffer         []processor.Fruit
+		dbHealthy           = true
+		probeRunning        = false
+		reconnectCh         = make(chan struct{}, 1)
+		prevGrademapPayload map[string]any // nil on first grademap update
 	)
 
 	for {
@@ -291,6 +336,19 @@ func run(ctx context.Context, _ []string, cfg *Config) error {
 			}
 			writeBuffer = writeBuffer[:0] // reset slice, reuse backing array
 			dbHealthy = true
+
+		case payload := <-proc.GradeCh():
+			if !dbHealthy {
+				slog.Warn("Dropped grademap update — DB unhealthy")
+				continue
+			}
+			next, err := writeGrademap(ctx, pool, payload, prevGrademapPayload)
+			if err != nil {
+				slog.Error("Failed to persist grademap", "err", err)
+				// Do not update prevGrademapPayload — diff self-corrects on next success
+				continue
+			}
+			prevGrademapPayload = next
 		}
 	}
 }
