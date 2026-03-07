@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"strings"
 
 	"github.com/bellgrove/breeze/processor"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -20,13 +21,15 @@ import (
 
 type Config struct {
 	MQTT struct {
-		URI  string `yaml:"uri" envconfig:"SERVER_URI"`
+		URI  string `yaml:"uri"  envconfig:"SERVER_URI"`
 		User string `yaml:"user" envconfig:"SERVER_USER"`
 		Pass string `yaml:"pass" envconfig:"SERVER_PASS"`
 	} `yaml:"mqtt"`
 	Database struct {
 		URL string `yaml:"url" envconfig:"DATABASE_URL"`
 	} `yaml:"database"`
+	LogLevel  string `yaml:"log_level"  envconfig:"LOG_LEVEL"`
+	QueueSize int    `yaml:"queue_size" envconfig:"QUEUE_SIZE"`
 }
 
 const (
@@ -57,6 +60,17 @@ func main() {
 
 	readFile(path, &cfg)
 	readEnv(&cfg)
+
+	level := slog.LevelInfo
+	switch strings.ToLower(cfg.LogLevel) {
+	case "debug":
+		level = slog.LevelDebug
+	case "warn":
+		level = slog.LevelWarn
+	case "error":
+		level = slog.LevelError
+	}
+	slog.SetLogLoggerLevel(level)
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt)
@@ -100,7 +114,10 @@ func run(ctx context.Context, _ []string, cfg *Config) error {
 
 	next_batch := make(chan bool)
 	defer close(next_batch)
-	var proc = processor.Create(next_batch, 50)
+	if cfg.QueueSize == 0 {
+		cfg.QueueSize = 50
+	}
+	var proc = processor.Create(next_batch, cfg.QueueSize)
 
 	opts := mqtt.NewClientOptions()
 	slog.Info(cfg.MQTT.URI)
@@ -119,13 +136,13 @@ func run(ctx context.Context, _ []string, cfg *Config) error {
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		panic(token.Error())
 	}
+	defer client.Disconnect(250)
 
 	slog.Info("Hello, World!")
 
 	for {
 		select {
 		case <-ctx.Done():
-			client.Disconnect(250)
 			return nil
 		case <-next_batch:
 			// slog.Info("New write")

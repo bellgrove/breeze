@@ -2,7 +2,6 @@ package processor
 
 import (
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"strings"
 	"sync/atomic"
@@ -61,13 +60,9 @@ func (p *Processor) Next() bool {
 
 // Values returns the values for the current row.
 func (p *Processor) Values() ([]any, error) {
-	if p.counter.Add(-1) >= 0 {
-		f := <-p.queue
-		return f.AsRow()
-	} else {
-		p.counter.Add(1)
-		return nil, fmt.Errorf("queue is empty")
-	}
+	f := <-p.queue
+	p.counter.Add(-1)
+	return f.AsRow()
 }
 
 // Err returns any error that has been encountered by the CopyFromSource. If
