@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 03-grademap-persistence-01-PLAN.md
-last_updated: "2026-03-07T23:11:16.964Z"
+stopped_at: Completed 03-grademap-persistence-02-PLAN.md
+last_updated: "2026-03-07T23:16:14.265Z"
 last_activity: 2026-03-07 — Roadmap created
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 9
-  completed_plans: 7
+  completed_plans: 8
   percent: 0
 ---
 
@@ -57,6 +57,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02-write-buffer-and-reconnect P02 | 8 | 1 tasks | 2 files |
 | Phase 02-write-buffer-and-reconnect P03 | 2m | 2 tasks | 2 files |
 | Phase 03-grademap-persistence P01 | 3m | 3 tasks | 4 files |
+| Phase 03-grademap-persistence P02 | 15m | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -78,6 +79,9 @@ Recent decisions affecting current work:
 - [Phase 02-write-buffer-and-reconnect]: Graceful shutdown abandons buffered records (ctx.Done()) — no flush attempt, DB may still be down, acceptable per design
 - [Phase 03-grademap-persistence]: DiffGrademaps takes map[string]any (not Grademap struct) — decouples diff logic from grademap model schema
 - [Phase 03-grademap-persistence]: TestOnMessage_GrademapChannel placed in existing processor_test.go to share mockMsg and newTestProcessorSmallQueue helpers
+- [Phase 03-grademap-persistence]: containerEntityTypes map is explicit (not heuristic) — unknown top-level map keys get entity_type 'unknown'
+- [Phase 03-grademap-persistence]: DiffGrademaps returns nil (not empty slice) when no changes — callers check len > 0
+- [Phase 03-grademap-persistence]: gradeCh initialised in both Create() and newTestProcessorSmallQueue — test helper bypasses Create()
 
 ### Pending Todos
 
@@ -89,6 +93,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-07T23:11:16.960Z
-Stopped at: Completed 03-grademap-persistence-01-PLAN.md
+Last session: 2026-03-07T23:16:14.260Z
+Stopped at: Completed 03-grademap-persistence-02-PLAN.md
 Resume file: None

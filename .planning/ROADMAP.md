@@ -86,5 +86,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Code Cleanup | 3/3 | Complete   | 2026-03-07 |
 | 2. Write Buffer and Reconnect | 3/3 | Complete   | 2026-03-07 |
-| 3. Grademap Persistence | 0/3 | Not started | - |
+| 3. Grademap Persistence | 2/3 | In Progress|  |
 | 4. Timing Reconciliation | 0/? | Not started | - |
