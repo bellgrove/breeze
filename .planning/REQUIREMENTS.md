@@ -22,9 +22,9 @@
 
 ### Grademap History
 
-- [ ] **GRAD-01**: `breeze_grademap` table exists (append-only: `id`, `received_at TIMESTAMPTZ`, `payload JSONB`)
-- [ ] **GRAD-02**: A record is inserted on every MQTT grademap update (sent via channel to `run()`, non-blocking in `OnMessage`)
-- [ ] **GRAD-03**: `breeze_grademap_changes` table exists with queryable change rows — one row per changed field: `(grademap_id FK, entity_type, entity_name, field, old_value TEXT, new_value TEXT)` — enabling queries like "show all threshold changes this month"
+- [x] **GRAD-01**: `breeze_grademap` table exists (append-only: `id`, `received_at TIMESTAMPTZ`, `payload JSONB`)
+- [x] **GRAD-02**: A record is inserted on every MQTT grademap update (sent via channel to `run()`, non-blocking in `OnMessage`)
+- [x] **GRAD-03**: `breeze_grademap_changes` table exists with queryable change rows — one row per changed field: `(grademap_id FK, entity_type, entity_name, field, old_value TEXT, new_value TEXT)` — enabling queries like "show all threshold changes this month"
 
 ### Timing Reconciliation
 
@@ -64,9 +64,9 @@
 | RECO-02 | Phase 2 | Complete |
 | RECO-03 | Phase 2 | Complete |
 | RECO-04 | Phase 2 | Complete |
-| GRAD-01 | Phase 3 | Pending |
-| GRAD-02 | Phase 3 | Pending |
-| GRAD-03 | Phase 3 | Pending |
+| GRAD-01 | Phase 3 | Complete |
+| GRAD-02 | Phase 3 | Complete |
+| GRAD-03 | Phase 3 | Complete |
 | TIME-01 | Phase 4 | Pending |
 | TIME-02 | Phase 4 | Pending |
 

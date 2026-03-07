@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 02-write-buffer-and-reconnect-03-PLAN.md
-last_updated: "2026-03-07T20:45:13.091Z"
+stopped_at: Completed 03-grademap-persistence-01-PLAN.md
+last_updated: "2026-03-07T23:11:16.964Z"
 last_activity: 2026-03-07 — Roadmap created
 progress:
   total_phases: 4
   completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 9
+  completed_plans: 7
   percent: 0
 ---
 
@@ -56,6 +56,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 02-write-buffer-and-reconnect P01 | 8m | 2 tasks | 3 files |
 | Phase 02-write-buffer-and-reconnect P02 | 8 | 1 tasks | 2 files |
 | Phase 02-write-buffer-and-reconnect P03 | 2m | 2 tasks | 2 files |
+| Phase 03-grademap-persistence P01 | 3m | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,8 @@ Recent decisions affecting current work:
 - [Phase 02-write-buffer-and-reconnect]: DrainFruits is a package-level function (not method) so run() can call it by name; counter.Load() snapshots stable count since only called from single-goroutine select loop
 - [Phase 02-write-buffer-and-reconnect]: nil pool panics in pgx.BeginTxFunc — TestTransactionalWrite uses closed pool instead of nil to exercise error path
 - [Phase 02-write-buffer-and-reconnect]: Graceful shutdown abandons buffered records (ctx.Done()) — no flush attempt, DB may still be down, acceptable per design
+- [Phase 03-grademap-persistence]: DiffGrademaps takes map[string]any (not Grademap struct) — decouples diff logic from grademap model schema
+- [Phase 03-grademap-persistence]: TestOnMessage_GrademapChannel placed in existing processor_test.go to share mockMsg and newTestProcessorSmallQueue helpers
 
 ### Pending Todos
 
@@ -86,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-07T20:41:24.655Z
-Stopped at: Completed 02-write-buffer-and-reconnect-03-PLAN.md
+Last session: 2026-03-07T23:11:16.960Z
+Stopped at: Completed 03-grademap-persistence-01-PLAN.md
 Resume file: None
