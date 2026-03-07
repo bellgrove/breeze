@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 1 context gathered
-last_updated: "2026-03-07T14:48:10.657Z"
+stopped_at: Completed 01-01-PLAN.md
+last_updated: "2026-03-07T18:17:33.869Z"
 last_activity: 2026-03-07 — Roadmap created
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 3
+  completed_plans: 1
   percent: 0
 ---
 
@@ -50,6 +50,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: -
 
 *Updated after each plan completion*
+| Phase 01-code-cleanup P01 | 3 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -60,6 +61,8 @@ Recent decisions affecting current work:
 
 - Pending: Investigate fruit JSON for grademap version field — gates Phase 4 implementation path (Path A vs Path B)
 - Pending: Configurable write buffer max size — default 10,000 items (~15 MB heap)
+- [Phase 01-code-cleanup]: Bypassed Create() to construct Processor directly — Create() hard-codes queue size 50, making QUAL-01 full-queue test impossible via public API
+- [Phase 01-code-cleanup]: TestValues_CounterOrder written as a green guard test — QUAL-02 race condition not reliably triggered by single goroutine; test documents invariant for Plan 02 regression protection
 
 ### Pending Todos
 
@@ -71,6 +74,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-07T14:48:10.651Z
-Stopped at: Phase 1 context gathered
-Resume file: .planning/phases/01-code-cleanup/01-CONTEXT.md
+Last session: 2026-03-07T18:17:33.866Z
+Stopped at: Completed 01-01-PLAN.md
+Resume file: None
