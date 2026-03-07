@@ -69,6 +69,20 @@ func (p *Processor) Err() error {
 	return nil
 }
 
+// DrainFruits reads all available items from the Processor queue and returns
+// them as a []Fruit slice, resetting the counter to zero. It is the caller's
+// responsibility not to call DrainFruits concurrently with Next/Values.
+// Used by run() to collect fruits before deciding to write or buffer.
+func DrainFruits(p *Processor) []Fruit {
+	n := int(p.counter.Load())
+	out := make([]Fruit, 0, n)
+	for i := 0; i < n; i++ {
+		out = append(out, <-p.queue)
+	}
+	p.counter.Store(0)
+	return out
+}
+
 const (
 	maxTimeout = time.Duration(1) * time.Second
 	maxItems   = 30
