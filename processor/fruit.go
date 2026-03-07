@@ -358,6 +358,5 @@ func (a *Fruit) UnmarshalJSON(b []byte) error {
 	} else {
 		slog.Warn("Invalid fruit processing time", "raw", b)
 	}
-	// a.OtherDefects = []string{"ABCD"}
 	return nil
 }

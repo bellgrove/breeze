@@ -49,8 +49,6 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 }
 
 func main() {
-	// slog.SetLogLoggerLevel(slog.LevelDebug)
-
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	var cfg Config
@@ -96,14 +94,12 @@ func main() {
 }
 
 func run(ctx context.Context, _ []string, cfg *Config) error {
-	// conn, err := pgx.Connect(ctx, cfg.Database.URL)
 	config, err := pgxpool.ParseConfig(cfg.Database.URL)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to parse db config: %v\n", err)
 		os.Exit(1)
 	}
 
-	// config.MaxConnIdleTime =
 	pool, err := pgxpool.NewWithConfig(ctx, config)
 
 	if err != nil {
@@ -145,7 +141,6 @@ func run(ctx context.Context, _ []string, cfg *Config) error {
 		case <-ctx.Done():
 			return nil
 		case <-next_batch:
-			// slog.Info("New write")
 			rows, err := pool.CopyFrom(
 				ctx,
 				pgx.Identifier{"breeze_fruit"},
@@ -157,9 +152,6 @@ func run(ctx context.Context, _ []string, cfg *Config) error {
 			} else {
 				slog.Debug("Wrote rows", "count", rows)
 			}
-			// default:
-			// 	// do a piece of work
-			// 	time.Sleep(100 * time.Millisecond)
 		}
 	}
 }

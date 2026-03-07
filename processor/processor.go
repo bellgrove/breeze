@@ -13,9 +13,7 @@ import (
 type Processor struct {
 	timer   chan bool
 	queue   chan Fruit
-	counter atomic.Int32
-	// dequeue  *deque.Deque[Fruit]
-	// current  Fruit
+	counter  atomic.Int32
 	grademap Grademap
 }
 
@@ -111,14 +109,10 @@ func Create(next chan bool, queueSize int) Processor {
 		}
 	}()
 
-	// queue := new(deque.Deque[Fruit])
-	// queue.SetBaseCap(100)
-
 	return Processor{
 		timer,
 		make(chan Fruit, queueSize),
 		atomic.Int32{},
-		// Fruit{},
 		Grademap{},
 	}
 }

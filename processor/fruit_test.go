@@ -90,7 +90,6 @@ func TestFromJson(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var got Fruit
 			err := json.Unmarshal(tt.args.val, &got)
-			// got, err := FromJson(tt.args.val)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("FromJson() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -98,9 +97,6 @@ func TestFromJson(t *testing.T) {
 			if err := ValidateFruit(got, tt.want); err != nil {
 				t.Errorf("Unmarshal = %s", err)
 			}
-			// if !reflect.DeepEqual(got, tt.want) {
-			// 	t.Errorf("FromJson() = %#v, want %#v", got, tt.want)
-			// }
 		})
 	}
 }

@@ -119,18 +119,6 @@ func (c *GmGrCsCr) Check(f *Fruit) bool {
 }
 
 func (g *Grademap) Grade(f *Fruit) {
-	// A -> 3
-	// B -> 2
-	// len(grades) = 5
-	// idx := -1
-	// if len(f.VisionGrade) >= 1 {
-	// 	idx = len(g.Grades) - int(f.VisionGrade[0]-'A') - 2
-	// }
-	// if idx < 0 || idx >= len(g.Grades)-1 {
-	// 	slog.Error("invalid fruit grade", "vision_grade", f.VisionGrade)
-	// 	return
-	// }
-
 	codes := make([]string, 0, 8)
 	reasons := make([]string, 0, 8)
 
@@ -185,7 +173,6 @@ func (g *Grademap) Update(b []byte) error {
 	for k1, v1 := range gm.Defect_grading_passes {
 		v1.Name = k1
 		g.Passes[v1.Index] = v1
-		// gm.Defect_grading_passes[k1] = v1
 	}
 
 	g.Grades = make([]Grade, len(gm.Grades))
