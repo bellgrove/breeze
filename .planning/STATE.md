@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 2 context gathered
-last_updated: "2026-03-07T20:17:25.821Z"
+stopped_at: Completed 02-write-buffer-and-reconnect/02-01-PLAN.md
+last_updated: "2026-03-07T20:36:26.779Z"
 last_activity: 2026-03-07 — Roadmap created
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 6
+  completed_plans: 5
   percent: 0
 ---
 
@@ -53,6 +53,8 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 01-code-cleanup P01 | 3 | 1 tasks | 1 files |
 | Phase 01-code-cleanup P02 | 12 | 2 tasks | 3 files |
 | Phase 01-code-cleanup P03 | 4m | 2 tasks | 8 files |
+| Phase 02-write-buffer-and-reconnect P01 | 8m | 2 tasks | 3 files |
+| Phase 02-write-buffer-and-reconnect P02 | 8 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -68,6 +70,8 @@ Recent decisions affecting current work:
 - [Phase 01-code-cleanup]: UnmarshalJSON error propagated via fmt.Errorf — prerequisite for QUAL-03 check in OnMessage to work correctly
 - [Phase 01-code-cleanup]: QueueSize default 50 applied in run() before Create() — preserves existing behavior when unconfigured
 - [Phase 01-code-cleanup]: slog.SetLogLoggerLevel used for log level wiring — matches existing slog usage pattern
+- [Phase 02-write-buffer-and-reconnect]: Committed DrainFruits implementation with drain_test.go — both were in working tree from prior session; test requires the implementation to compile
+- [Phase 02-write-buffer-and-reconnect]: DrainFruits is a package-level function (not method) so run() can call it by name; counter.Load() snapshots stable count since only called from single-goroutine select loop
 
 ### Pending Todos
 
@@ -79,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-07T20:17:25.817Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-write-buffer-and-reconnect/02-CONTEXT.md
+Last session: 2026-03-07T20:36:17.431Z
+Stopped at: Completed 02-write-buffer-and-reconnect/02-01-PLAN.md
+Resume file: None

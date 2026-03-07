@@ -15,10 +15,10 @@
 
 ### Database Reconnection
 
-- [ ] **RECO-01**: Fruit records are buffered in a bounded in-memory slice when `CopyFrom` fails (configurable max size, drop-oldest policy)
-- [ ] **RECO-02**: A background reconnect probe (`pool.Ping` with exponential backoff) runs when DB is unhealthy
-- [ ] **RECO-03**: Buffered records are automatically flushed when DB connection is restored
-- [ ] **RECO-04**: All `CopyFrom` calls are wrapped in explicit transactions to prevent partial-batch duplicates on retry
+- [x] **RECO-01**: Fruit records are buffered in a bounded in-memory slice when `CopyFrom` fails (configurable max size, drop-oldest policy)
+- [x] **RECO-02**: A background reconnect probe (`pool.Ping` with exponential backoff) runs when DB is unhealthy
+- [x] **RECO-03**: Buffered records are automatically flushed when DB connection is restored
+- [x] **RECO-04**: All `CopyFrom` calls are wrapped in explicit transactions to prevent partial-batch duplicates on retry
 
 ### Grademap History
 
@@ -60,10 +60,10 @@
 | QUAL-03 | Phase 1 | Complete |
 | QUAL-04 | Phase 1 | Complete |
 | QUAL-05 | Phase 1 | Complete |
-| RECO-01 | Phase 2 | Pending |
-| RECO-02 | Phase 2 | Pending |
-| RECO-03 | Phase 2 | Pending |
-| RECO-04 | Phase 2 | Pending |
+| RECO-01 | Phase 2 | Complete |
+| RECO-02 | Phase 2 | Complete |
+| RECO-03 | Phase 2 | Complete |
+| RECO-04 | Phase 2 | Complete |
 | GRAD-01 | Phase 3 | Pending |
 | GRAD-02 | Phase 3 | Pending |
 | GRAD-03 | Phase 3 | Pending |
