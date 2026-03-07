@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -84,4 +85,22 @@ func TestTransactionalWrite(t *testing.T) {
 		t.Fatal("expected error from writeBatch with closed pool, got nil")
 	}
 	// The error path is the important assertion: no partial rows, no panic.
+}
+
+// TestGrademapSchema verifies GRAD-01: the package exposes DDL constants for
+// the grademap and grademap_changes tables including a foreign-key reference.
+//
+// grademapDDL and grademapChangesDDL defined by Plan 03 — intentionally RED until then.
+func TestGrademapSchema(t *testing.T) {
+	if !strings.Contains(grademapDDL, "CREATE TABLE breeze_grademap") {
+		t.Errorf("grademapDDL does not contain CREATE TABLE breeze_grademap; got:\n%s", grademapDDL)
+	}
+
+	if !strings.Contains(grademapChangesDDL, "CREATE TABLE breeze_grademap_changes") {
+		t.Errorf("grademapChangesDDL does not contain CREATE TABLE breeze_grademap_changes; got:\n%s", grademapChangesDDL)
+	}
+
+	if !strings.Contains(grademapChangesDDL, "REFERENCES breeze_grademap") {
+		t.Errorf("grademapChangesDDL does not contain REFERENCES breeze_grademap (missing FK); got:\n%s", grademapChangesDDL)
+	}
 }
