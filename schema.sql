@@ -92,6 +92,10 @@ CREATE TABLE breeze_grademap_changes (
 CREATE INDEX breeze_grademap_changes_grademap_id_idx ON breeze_grademap_changes (grademap_id);
 CREATE INDEX breeze_grademap_changes_field_idx ON breeze_grademap_changes (field);
 
+-- Phase 4: timing reconciliation
+-- Safe for existing deployments: nullable, no DEFAULT, no NOT NULL constraint.
+-- Existing rows (before grademap history was stored) get NULL, which is correct.
+ALTER TABLE breeze_fruit ADD COLUMN grademap_id BIGINT REFERENCES breeze_grademap(id);
 
-
-
+-- Optional index for analytics joins (e.g. "show all fruit for grademap X")
+CREATE INDEX breeze_fruit_grademap_id_idx ON breeze_fruit (grademap_id);
