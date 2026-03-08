@@ -55,11 +55,11 @@ func TestReconnectProbe(t *testing.T) {
 func TestFlushBuffer(t *testing.T) {
 	ctx := context.Background()
 	// Empty buffer returns nil without touching the pool
-	err := flushBuffer(ctx, nil, nil)
+	err := flushBuffer(ctx, nil, nil, 0)
 	if err != nil {
 		t.Fatalf("flushBuffer with empty buf should return nil, got %v", err)
 	}
-	err = flushBuffer(ctx, nil, []processor.Fruit{})
+	err = flushBuffer(ctx, nil, []processor.Fruit{}, 0)
 	if err != nil {
 		t.Fatalf("flushBuffer with empty slice should return nil, got %v", err)
 	}
@@ -80,7 +80,7 @@ func TestTransactionalWrite(t *testing.T) {
 		pool.Close()
 	}
 	// writeBatch against a closed pool returns a non-nil error and does not panic.
-	err = writeBatch(ctx, pool, []processor.Fruit{{CarrierId: "test"}})
+	err = writeBatch(ctx, pool, []processor.Fruit{{CarrierId: "test"}}, 0)
 	if err == nil {
 		t.Fatal("expected error from writeBatch with closed pool, got nil")
 	}

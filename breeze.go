@@ -84,9 +84,28 @@ func bufferFruits(buf []processor.Fruit, incoming []processor.Fruit, maxSize int
 
 // writeBatch writes a []processor.Fruit slice to breeze_fruit inside a transaction.
 // On error the transaction is rolled back automatically by BeginTxFunc.
-func writeBatch(ctx context.Context, pool *pgxpool.Pool, batch []processor.Fruit) error {
+// delay is subtracted from the earliest SizerTime in the batch to find the grademap
+// that was active when the OEM graded the fruit. A zero delay means no adjustment.
+func writeBatch(ctx context.Context, pool *pgxpool.Pool, batch []processor.Fruit, delay time.Duration) error {
+	var grademapID *int64
+	if len(batch) > 0 {
+		// Use the earliest SizerTime in the batch as the anchor (conservative).
+		anchor := batch[0].SizerTime
+		for _, f := range batch[1:] {
+			if f.SizerTime.Before(anchor) {
+				anchor = f.SizerTime
+			}
+		}
+		id, ok, err := resolveGrademapID(ctx, pool, anchor, delay)
+		if err != nil {
+			slog.Warn("Failed to resolve grademap ID — writing fruit with NULL grademap_id", "err", err)
+		} else if ok {
+			grademapID = &id
+		}
+	}
 	rows := make([][]any, len(batch))
 	for i := range batch {
+		batch[i].GrademapID = grademapID
 		row, err := batch[i].AsRow()
 		if err != nil {
 			return fmt.Errorf("failed to convert fruit to row: %w", err)
@@ -105,12 +124,29 @@ func writeBatch(ctx context.Context, pool *pgxpool.Pool, batch []processor.Fruit
 
 // flushBuffer writes all buffered fruits to breeze_fruit inside a transaction.
 // On failure, the caller must leave the buffer intact and retry later.
-func flushBuffer(ctx context.Context, pool *pgxpool.Pool, buf []processor.Fruit) error {
+// delay is subtracted from the earliest SizerTime in the buffer to resolve the
+// grademap that was active at OEM grading time. A zero delay means no adjustment.
+func flushBuffer(ctx context.Context, pool *pgxpool.Pool, buf []processor.Fruit, delay time.Duration) error {
 	if len(buf) == 0 {
 		return nil
 	}
+	var grademapID *int64
+	// Use the earliest SizerTime in the buffer as the anchor (conservative).
+	anchor := buf[0].SizerTime
+	for _, f := range buf[1:] {
+		if f.SizerTime.Before(anchor) {
+			anchor = f.SizerTime
+		}
+	}
+	id, ok, err := resolveGrademapID(ctx, pool, anchor, delay)
+	if err != nil {
+		slog.Warn("Failed to resolve grademap ID — flushing buffer with NULL grademap_id", "err", err)
+	} else if ok {
+		grademapID = &id
+	}
 	rows := make([][]any, len(buf))
 	for i := range buf {
+		buf[i].GrademapID = grademapID
 		row, err := buf[i].AsRow()
 		if err != nil {
 			return fmt.Errorf("failed to convert buffered fruit to row: %w", err)
@@ -292,6 +328,15 @@ func run(ctx context.Context, _ []string, cfg *Config) error {
 		cfg.WriteBufferSize = 10_000
 	}
 
+	var propagationDelay time.Duration
+	if cfg.GrademapPropagationDelayStr != "" {
+		propagationDelay, err = time.ParseDuration(cfg.GrademapPropagationDelayStr)
+		if err != nil {
+			return fmt.Errorf("invalid grademap_propagation_delay %q: %w", cfg.GrademapPropagationDelayStr, err)
+		}
+	}
+	// zero value means no adjustment — correct
+
 	var proc = processor.Create(next_batch, cfg.QueueSize)
 
 	opts := mqtt.NewClientOptions()
@@ -337,7 +382,7 @@ func run(ctx context.Context, _ []string, cfg *Config) error {
 				writeBuffer = bufferFruits(writeBuffer, batch, cfg.WriteBufferSize)
 				continue
 			}
-			if err := writeBatch(ctx, pool, batch); err != nil {
+			if err := writeBatch(ctx, pool, batch, propagationDelay); err != nil {
 				slog.Error("Failed to write batch", "err", err)
 				dbHealthy = false
 				writeBuffer = bufferFruits(writeBuffer, batch, cfg.WriteBufferSize)
@@ -349,7 +394,7 @@ func run(ctx context.Context, _ []string, cfg *Config) error {
 
 		case <-reconnectCh:
 			probeRunning = false
-			if err := flushBuffer(ctx, pool, writeBuffer); err != nil {
+			if err := flushBuffer(ctx, pool, writeBuffer, propagationDelay); err != nil {
 				slog.Error("Flush failed, re-buffering", "err", err)
 				// writeBuffer is left intact — do not re-append
 				probeRunning = true
