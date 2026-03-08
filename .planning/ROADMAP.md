@@ -16,6 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Write Buffer and Reconnect** - Eliminate fruit data loss during PostgreSQL outages (completed 2026-03-07)
 - [x] **Phase 3: Grademap Persistence** - Store every received grademap with timestamps for audit and reconciliation (completed 2026-03-07)
 - [x] **Phase 4: Timing Reconciliation** - Match each fruit record to the correct historical grademap (completed 2026-03-08)
+- [ ] **Phase 5: Processor Stability Cleanup** - Close two high-priority tech debt items flagged by milestone audit: timer blocking send and TestFromJson panic
 
 ## Phase Details
 
@@ -80,10 +81,23 @@ Plans:
 - [ ] 04-02-PLAN.md — Implement resolveGrademapID, add GrademapPropagationDelayStr to Config, add GrademapID to Fruit struct
 - [ ] 04-03-PLAN.md — Wire delay into writeBatch/flushBuffer/run(), add grademap_id DDL to schema.sql
 
+### Phase 5: Processor Stability Cleanup
+**Goal**: The processor package has no runtime reliability risks or broken test infrastructure — `OnMessage` cannot stall the MQTT dispatcher under any load, and `go test ./...` exits clean
+**Depends on**: Phase 1
+**Requirements**: QUAL-01 (full closure), QUAL-05 (full closure)
+**Gap Closure**: Closes tech debt items flagged by v1.0 milestone audit
+**Success Criteria** (what must be TRUE):
+  1. `OnMessage` cannot block the MQTT dispatcher under any conditions — both the queue send and the timer send are non-blocking
+  2. `go test ./...` exits with code 0 — the `TestFromJson/Class_2` panic is fixed and all processor tests pass clean
+**Plans**: 1 plan
+
+Plans:
+- [ ] 05-01-PLAN.md — Fix timer blocking send in processor.go; fix reflect.Value.Equal panic in fruit_test.go
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4
+Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 **Note on Phase 4:** Investigation complete (2026-03-08) — Path B confirmed. No grademap version field in fruit payload. Implementation uses configurable delay offset for AS-OF timestamp lookups.
 
@@ -93,3 +107,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | 2. Write Buffer and Reconnect | 3/3 | Complete   | 2026-03-07 |
 | 3. Grademap Persistence | 3/3 | Complete   | 2026-03-07 |
 | 4. Timing Reconciliation | 3/3 | Complete   | 2026-03-08 |
+| 5. Processor Stability Cleanup | 0/1 | Pending    | — |
