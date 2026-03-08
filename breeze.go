@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"log/slog"
@@ -46,9 +47,10 @@ type Config struct {
 	Database struct {
 		URL string `yaml:"url" envconfig:"DATABASE_URL"`
 	} `yaml:"database"`
-	LogLevel       string `yaml:"log_level"       envconfig:"LOG_LEVEL"`
-	QueueSize      int    `yaml:"queue_size"      envconfig:"QUEUE_SIZE"`
-	WriteBufferSize int   `yaml:"write_buffer_size" envconfig:"WRITE_BUFFER_SIZE"`
+	LogLevel                    string `yaml:"log_level"                 envconfig:"LOG_LEVEL"`
+	QueueSize                   int    `yaml:"queue_size"                envconfig:"QUEUE_SIZE"`
+	WriteBufferSize             int    `yaml:"write_buffer_size"         envconfig:"WRITE_BUFFER_SIZE"`
+	GrademapPropagationDelayStr string `yaml:"grademap_propagation_delay" envconfig:"GRADEMAP_PROPAGATION_DELAY"`
 }
 
 const (
@@ -166,6 +168,26 @@ func writeGrademap(ctx context.Context, pool *pgxpool.Pool, payload []byte, prev
 	}
 
 	return current, nil
+}
+
+// resolveGrademapID returns the id of the most recent breeze_grademap row whose
+// received_at is at or before fruitTime-delay. Returns (0, false, nil) when no
+// matching row exists (pgx.ErrNoRows is not treated as an error). Returns
+// (0, false, err) for any other query failure.
+func resolveGrademapID(ctx context.Context, pool *pgxpool.Pool, fruitTime time.Time, delay time.Duration) (int64, bool, error) {
+	adjustedTime := fruitTime.Add(-delay)
+	var id int64
+	err := pool.QueryRow(ctx,
+		`SELECT id FROM breeze_grademap WHERE received_at <= $1 ORDER BY received_at DESC LIMIT 1`,
+		adjustedTime,
+	).Scan(&id)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return 0, false, nil
+	}
+	if err != nil {
+		return 0, false, fmt.Errorf("resolve grademap id: %w", err)
+	}
+	return id, true, nil
 }
 
 // startReconnectProbe launches a background goroutine that pings the DB with
