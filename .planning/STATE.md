@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 04-timing-reconciliation-03-PLAN.md
-last_updated: "2026-03-08T00:17:43.581Z"
+stopped_at: Completed 05-processor-stability-cleanup-01-PLAN.md
+last_updated: "2026-03-08T01:26:43.807Z"
 last_activity: 2026-03-07 — Roadmap created
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 12
-  completed_plans: 12
+  total_phases: 5
+  completed_phases: 5
+  total_plans: 13
+  completed_plans: 13
   percent: 0
 ---
 
@@ -62,6 +62,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 04-timing-reconciliation P01 | 2m | 2 tasks | 1 files |
 | Phase 04-timing-reconciliation P02 | 3m | 2 tasks | 3 files |
 | Phase 04-timing-reconciliation P03 | 8m | 2 tasks | 2 files |
+| Phase 05-processor-stability-cleanup P01 | 3m | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,8 @@ Recent decisions affecting current work:
 - [Phase 04-timing-reconciliation]: TestWriteBatch_GrademapID converted to t.Skip — Plan 01 stub compiled as a 4-arg writeBatch call; after Plan 02 resolved other undefined symbols it was the only compile blocker; t.Skip preserves intent for Plan 03 to restore
 - [Phase 04-timing-reconciliation]: writeBatch resolves grademap ID once per batch using min(SizerTime) as conservative anchor — avoids unsupported per-row queries inside pgx CopyFrom
 - [Phase 04-timing-reconciliation]: grademap_id column is NULLABLE with no DEFAULT — safe for existing deployments; rows before grademap history correctly get NULL
+- [Phase 05-processor-stability-cleanup]: Inner select/default wraps p.timer send — both queue and timer sends are non-blocking in OnMessage
+- [Phase 05-processor-stability-cleanup]: M* fixture fields initialized via json.Unmarshal — plan stated both sides nil but parsed Fruit populates M* maps from JSON
 
 ### Pending Todos
 
@@ -104,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-08T00:14:37.722Z
-Stopped at: Completed 04-timing-reconciliation-03-PLAN.md
+Last session: 2026-03-08T01:26:43.802Z
+Stopped at: Completed 05-processor-stability-cleanup-01-PLAN.md
 Resume file: None
