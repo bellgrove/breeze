@@ -73,6 +73,16 @@ func TestFromJson(t *testing.T) {
 		PrimaryDefect:  "",
 		OtherDefects:   nil,
 	}
+	// Populate M* map fields from their []byte counterparts so that
+	// ValidateFruit's reflect.DeepEqual comparison can succeed.
+	_ = json.Unmarshal(c2_fruit.CenterOffsets, &c2_fruit.MCenterOffsets)
+	_ = json.Unmarshal(c2_fruit.ClassifiedBlob, &c2_fruit.MClassifiedBlob)
+	_ = json.Unmarshal(c2_fruit.Colour, &c2_fruit.MColour)
+	_ = json.Unmarshal(c2_fruit.ColourBlob, &c2_fruit.MColourBlob)
+	_ = json.Unmarshal(c2_fruit.Diameters, &c2_fruit.MDiameters)
+	_ = json.Unmarshal(c2_fruit.Features, &c2_fruit.MFeatures)
+	_ = json.Unmarshal(c2_fruit.Function, &c2_fruit.MFunction)
+	_ = json.Unmarshal(c2_fruit.Timer, &c2_fruit.MTimer)
 
 	type args struct {
 		val []byte
@@ -129,6 +139,10 @@ func ValidateFruit(x Fruit, y Fruit) (err error) {
 					slog.Info("What", "field", fieldName, "f1", v1, "f2", v2)
 					err = fmt.Errorf("%v%s does not match; ", err, fieldName)
 				}
+			}
+		} else if field1.Kind() == reflect.Map {
+			if !reflect.DeepEqual(field1.Interface(), field2.Interface()) {
+				err = fmt.Errorf("%v%s does not match; ", err, fieldName)
 			}
 		} else {
 			if !field1.Equal(field2) {
