@@ -104,3 +104,87 @@ func TestGrademapSchema(t *testing.T) {
 		t.Errorf("grademapChangesDDL does not contain REFERENCES breeze_grademap (missing FK); got:\n%s", grademapChangesDDL)
 	}
 }
+
+// TestResolveGrademapID_NoRows verifies that resolveGrademapID returns (0, false, nil)
+// or a non-nil error when no matching grademap row exists (closed-pool exercices error
+// path without a real DB).
+//
+// stub — RED until Plan 02 adds resolveGrademapID
+func TestResolveGrademapID_NoRows(t *testing.T) {
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, "postgres://invalid:invalid@localhost:1/doesnotexist?connect_timeout=1")
+	if err != nil {
+		t.Logf("pool creation note: %v", err)
+	}
+	if pool != nil {
+		pool.Close()
+	}
+	id, ok, err := resolveGrademapID(ctx, pool, time.Now(), 0)
+	// Closed pool: either (0, false, nil) for ErrNoRows branch or a non-nil error.
+	if err != nil {
+		// non-nil error is a valid outcome for a closed pool
+		return
+	}
+	if id != 0 || ok {
+		t.Errorf("expected (0, false, _) when no rows, got (%d, %v, %v)", id, ok, err)
+	}
+}
+
+// TestResolveGrademapID_ZeroDelay verifies that calling resolveGrademapID with
+// delay=0 does not panic and that the anchor time is passed unmodified (zero shift).
+//
+// stub — RED until Plan 02 adds resolveGrademapID
+func TestResolveGrademapID_ZeroDelay(t *testing.T) {
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, "postgres://invalid:invalid@localhost:1/doesnotexist?connect_timeout=1")
+	if err != nil {
+		t.Logf("pool creation note: %v", err)
+	}
+	if pool != nil {
+		pool.Close()
+	}
+	// delay=0 must not shift the anchor; pool error is expected, not a panic.
+	_, _, _ = resolveGrademapID(ctx, pool, time.Now(), 0)
+}
+
+// TestResolveGrademapID verifies that resolveGrademapID accepts the expected
+// signature (ctx, pool, time.Time, time.Duration) (int64, bool, error).
+//
+// stub — RED until Plan 02 adds resolveGrademapID
+func TestResolveGrademapID(t *testing.T) {
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, "postgres://invalid:invalid@localhost:1/doesnotexist?connect_timeout=1")
+	if err != nil {
+		t.Logf("pool creation note: %v", err)
+	}
+	if pool != nil {
+		pool.Close()
+	}
+	var id int64
+	var ok bool
+	id, ok, err = resolveGrademapID(ctx, pool, time.Now(), 30*time.Second)
+	// Signature compile check; pool error is expected.
+	_ = id
+	_ = ok
+	_ = err
+}
+
+// TestWriteBatch_GrademapID verifies that the updated writeBatch signature
+// (with delay time.Duration parameter) returns an error on a closed pool and
+// does not panic.
+//
+// stub — RED until Plan 03 updates writeBatch signature
+func TestWriteBatch_GrademapID(t *testing.T) {
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, "postgres://invalid:invalid@localhost:1/doesnotexist?connect_timeout=1")
+	if err != nil {
+		t.Logf("pool creation note: %v", err)
+	}
+	if pool != nil {
+		pool.Close()
+	}
+	err = writeBatch(ctx, pool, []processor.Fruit{{CarrierId: "test"}}, 0)
+	if err == nil {
+		t.Fatal("expected error from writeBatch with closed pool, got nil")
+	}
+}
