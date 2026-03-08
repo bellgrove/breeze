@@ -198,6 +198,41 @@ func TestOnMessage_MalformedJSON(t *testing.T) {
 	}
 }
 
+// TestOnMessage_TimerNonBlocking verifies QUAL-01 full closure: the timer send
+// inside OnMessage must not block even when the timer channel (cap=1) is already
+// full. newTestProcessorSmallQueue over-sizes the timer channel and cannot catch
+// this bug; Create() produces a processor with timer cap=1 as in production.
+func TestOnMessage_TimerNonBlocking(t *testing.T) {
+	next := make(chan bool, 100) // drain freely — we only care about OnMessage
+	p := Create(next, 10)
+
+	// Send two fruits in rapid succession. The timer goroutine inside Create()
+	// may or may not have consumed the first signal by the time the second
+	// OnMessage runs. Both calls must return immediately regardless.
+	first := make(chan struct{})
+	go func() {
+		defer close(first)
+		p.OnMessage(nil, mockMsg{topic: fruitTopic(), payload: validFruitPayload})
+	}()
+	select {
+	case <-first:
+	case <-time.After(200 * time.Millisecond):
+		t.Fatal("first OnMessage blocked — unexpected")
+	}
+
+	second := make(chan struct{})
+	go func() {
+		defer close(second)
+		p.OnMessage(nil, mockMsg{topic: fruitTopic(), payload: validFruitPayload})
+	}()
+	select {
+	case <-second:
+		// non-blocking — QUAL-01 timer fix is in place
+	case <-time.After(200 * time.Millisecond):
+		t.Error("second OnMessage blocked — timer send is still blocking (QUAL-01 not fixed)")
+	}
+}
+
 // TestOnMessage_GrademapChannel verifies GRAD-02: after a grademap-topic
 // OnMessage call the processor exposes the raw payload via a GradeCh()
 // channel, and the call returns immediately even when the channel is full.

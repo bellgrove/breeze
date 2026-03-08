@@ -54,7 +54,11 @@ func (p *Processor) OnMessage(client mqtt.Client, msg mqtt.Message) {
 		select {
 		case p.queue <- f:
 			p.counter.Add(1)
-			p.timer <- true
+			select {
+			case p.timer <- true:
+			default:
+				// timer already has a pending signal; batch goroutine will drain queue
+			}
 		default:
 			slog.Warn("Dropped fruit", "carrier", f.CarrierId)
 		}
