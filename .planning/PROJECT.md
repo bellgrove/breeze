@@ -2,7 +2,7 @@
 
 ## What This Is
 
-Breeze is a Go daemon that bridges a Tomra OEM fruit grader and a PostgreSQL/TimescaleDB database. It subscribes to MQTT topics for raw fruit measurements and grademap updates, re-applies the grademap locally to determine *why* each fruit was graded (primary defect and contributing defects), and bulk-writes the enriched records for analytics and auditing.
+Breeze is a Go daemon that bridges a Tomra OEM fruit grader and a PostgreSQL/TimescaleDB database. It subscribes to MQTT topics for raw fruit measurements and grademap updates, re-applies the grademap locally to determine *why* each fruit was graded (primary defect and contributing defects), and bulk-writes the enriched records for analytics and auditing. It buffers records during database outages and attributes each fruit to the exact historical grademap that was active when the OEM graded it.
 
 ## Core Value
 
@@ -19,42 +19,59 @@ Every fruit record must be attributable to a specific defect cause — "10% clas
 - ✓ Batch writes (30-item threshold or 1-second timer) to reduce DB round-trips — existing
 - ✓ Config via YAML file with env var override — existing
 - ✓ Graceful shutdown on OS signal — existing
+- ✓ `OnMessage` uses a non-blocking channel send with drop-and-warn so the paho MQTT dispatcher never stalls — v1.0
+- ✓ `Processor` counter decrements after channel read, not before (fix counter/channel race) — v1.0
+- ✓ `json.Unmarshal` errors in `OnMessage` are logged, not silently swallowed — v1.0
+- ✓ Shutdown defer order in `run()` corrected — MQTT disconnect before pool close — v1.0
+- ✓ General code review and cleanup (dead code, commented-out imports, style) — v1.0
+- ✓ Fruit records buffered in bounded in-memory slice when `CopyFrom` fails (configurable max, drop-oldest policy) — v1.0
+- ✓ Background reconnect probe (`pool.Ping` with exponential backoff) runs when DB is unhealthy — v1.0
+- ✓ Buffered records automatically flushed when DB connection is restored — v1.0
+- ✓ All `CopyFrom` calls wrapped in explicit transactions to prevent partial-batch duplicates on retry — v1.0
+- ✓ `breeze_grademap` table (append-only: `id`, `received_at TIMESTAMPTZ`, `payload JSONB`) — v1.0
+- ✓ A record inserted on every MQTT grademap update — v1.0
+- ✓ `breeze_grademap_changes` table with queryable per-field change rows — v1.0
+- ✓ Fruit records matched to correct historical grademap via AS-OF timestamp query — v1.0
+- ✓ Configurable `grademap_propagation_delay` offset applied to AS-OF lookup — v1.0
 
 ### Active
 
-- [ ] Fix PostgreSQL reconnection: buffer writes when DB is down (up to a configurable limit), flush automatically when connection is restored
-- [ ] Store grademap in TimescaleDB with timestamps — enables audit log of all grademap changes and what changed
-- [ ] Fix grademap timing reconciliation: investigate whether fruit JSON contains a grademap version field; if not, model the OEM's delay between publishing a new grademap and applying it to fruit (so the correct historical grademap is used to re-grade each fruit)
-- [ ] Code review and cleanup of existing codebase
+- [ ] Metrics endpoint exposing queue depth, buffer fill level, DB health state, and fruit throughput rate (OBS-01)
+- [ ] Structured log fields for grademap reconciliation misses (OBS-02)
+- [ ] Support for multiple Tomra grader units — configurable topic prefixes (MULTI-01)
 
 ### Out of Scope
 
-- HTTP API or web interface — headless daemon only
+- HTTP API or web interface — headless daemon only; analytics via TimescaleDB directly
 - Alerting or notifications — analytics via TimescaleDB queries only
-- Support for multiple grader machines — single Tomra unit (topic prefix `tomra/211632/`)
+- Mobile or browser dashboard — not requested
+- OAuth / external auth — no HTTP layer
 
 ## Context
 
-The OEM grader sends raw fruit measurements (size, colour spectroscopy, etc.) and a final grade but does not explain *why* a fruit was assigned that grade. Breeze re-applies the grademap rules locally to infer the cause. The grademap is a retained MQTT topic — it is not currently persisted to the database.
+**v1.0 shipped 2026-03-08.**
 
-**Known bugs:**
-1. **Grademap timing gap:** When the grademap changes, the OEM applies the change after some pipeline delay (fruit already in transit are graded on the old map). Breeze currently switches immediately on receipt, producing a window where reconciliation fails. Fruit JSON may contain a grademap version field — this must be investigated before choosing a fix approach.
-2. **PostgreSQL reconnection failure:** If the database resets, the pgxpool connection is not recovered and writes are lost. The service must buffer unconsumed fruit records and replay them once the connection is restored.
+Codebase: 6,146 lines Go. Tech stack: Go 1.24.3, paho.mqtt.golang, pgx/v5, TimescaleDB. Single binary, Linux, no HTTP layer.
 
-**Analytics goal:** TimescaleDB stores the defect-attributed records, enabling queries like "insect damage rate per hour this week" — breaking down grade outcomes by cause rather than just grade category.
+The daemon now correctly attributes every fruit to the specific grademap active when the OEM graded it, using a configurable propagation delay offset. Fruit records are buffered in memory during DB outages (configurable limit, drop-oldest policy) and auto-flushed on reconnect. Every grademap change is persisted to `breeze_grademap` and `breeze_grademap_changes` for audit and reconciliation queries.
+
+Live infrastructure verification (E2E with live MQTT + TimescaleDB) remains pending — all unit and integration tests pass. Three VALIDATION.md files have stale frontmatter (nyquist_compliant: false) that does not reflect actual passing tests.
 
 ## Constraints
 
 - **Tech stack**: Go 1.24.3, paho.mqtt.golang, pgx/v5, TimescaleDB — no changes to these
-- **Schema**: Existing `breeze_fruit` TimescaleDB table; grademap storage will require new table(s)
+- **Schema**: `breeze_fruit`, `breeze_grademap`, `breeze_grademap_changes` TimescaleDB tables
 - **Deployment**: Single binary, Linux, no HTTP layer
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Investigate fruit JSON for grademap version field | Determines fix approach for timing bug — version field = clean fix, no field = must model OEM delay | — Pending |
-| Write buffer limit for DB reconnection | Bounds memory usage during outage; configurable value needed | — Pending |
+| Investigate fruit JSON for grademap version field | Determines fix approach for timing bug | ✓ Path B confirmed — no version field in payload; use AS-OF timestamp with propagation delay offset |
+| Write buffer limit for DB reconnection | Bounds memory usage during outage | ✓ Configurable max size with drop-oldest eviction policy |
+| Non-blocking `OnMessage` (inner select/default for timer) | Timer channel (cap 1) could stall dispatcher if queue branch triggered twice in quick succession | ✓ Implemented in Phase 5 — both queue and timer sends are now non-blocking |
+| Decimal phase numbering for Phase 5 | Phase 5 inserted after milestone audit to close tech debt without disrupting planning | ✓ Works well — clear insertion semantics |
+| `reflect.DeepEqual` over `reflect.Value.Equal` for map comparison in tests | `reflect.Value.Equal` panics on `map[string]interface{}`; `reflect.DeepEqual` is the correct Go idiom | ✓ Fixed TestFromJson/Class_2; `go test ./...` exits clean |
 
 ---
-*Last updated: 2026-03-07 after initialization*
+*Last updated: 2026-03-08 after v1.0 milestone*

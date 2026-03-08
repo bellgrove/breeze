@@ -1,36 +1,35 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: planning
-stopped_at: Completed 05-processor-stability-cleanup-01-PLAN.md
-last_updated: "2026-03-08T01:29:48.421Z"
-last_activity: 2026-03-07 — Roadmap created
+milestone: v1.1
+milestone_name: —
+status: milestone_complete
+stopped_at: v1.0 milestone archived 2026-03-08
+last_updated: "2026-03-08"
+last_activity: 2026-03-08 — v1.0 milestone shipped and archived
 progress:
   total_phases: 5
   completed_phases: 5
   total_plans: 13
   completed_plans: 13
-  percent: 0
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-07)
+See: .planning/PROJECT.md (updated 2026-03-08 after v1.0 milestone)
 
 **Core value:** Every fruit record must be attributable to a specific defect cause — "10% class B" is useless; "4% insect damage, 3% sunburn, 2% punctures, 1% rot" is the goal.
-**Current focus:** Phase 1 — Code Cleanup
+**Current focus:** Planning next milestone (v1.1)
 
 ## Current Position
 
-Phase: 1 of 4 (Code Cleanup)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-03-07 — Roadmap created
+Phase: 5 of 5 — all complete
+Status: Milestone shipped
+Last activity: 2026-03-08 — v1.0 archived and tagged
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
@@ -103,7 +102,7 @@ None yet.
 
 ### Blockers/Concerns
 
-- Phase 4 gated by live OEM traffic inspection: must inspect actual fruit JSON payloads before planning Phase 4. The investigation determines whether a grademap version field exists (clean Path A fix) or requires a configurable delay offset (approximate Path B fix). Do not begin Phase 4 planning until this is documented.
+None — v1.0 shipped. Live E2E verification (grademap persistence + timing reconciliation against live MQTT + TimescaleDB) remains pending for production confidence.
 
 ## Session Continuity
 
