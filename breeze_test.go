@@ -172,10 +172,20 @@ func TestResolveGrademapID(t *testing.T) {
 // TestWriteBatch_GrademapID verifies that the updated writeBatch signature
 // (with delay time.Duration parameter) returns an error on a closed pool and
 // does not panic.
-//
-// stub — RED until Plan 03 updates writeBatch to accept a delay parameter
 func TestWriteBatch_GrademapID(t *testing.T) {
-	t.Skip("Plan 03 updates writeBatch signature to include delay time.Duration — re-enable then")
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, "postgres://invalid:invalid@localhost:1/doesnotexist?connect_timeout=1")
+	if err != nil {
+		t.Logf("pool creation note: %v", err)
+	}
+	if pool != nil {
+		pool.Close()
+	}
+	// writeBatch with delay parameter must return error on closed pool and not panic.
+	err = writeBatch(ctx, pool, []processor.Fruit{{CarrierId: "test"}}, 30*time.Second)
+	if err == nil {
+		t.Fatal("expected error from writeBatch with closed pool, got nil")
+	}
 }
 
 // TestConfig_PropagationDelay verifies that Config.GrademapPropagationDelayStr
