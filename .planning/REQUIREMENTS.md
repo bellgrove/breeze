@@ -28,8 +28,8 @@
 
 ### Timing Reconciliation
 
-- [ ] **TIME-01**: Fruit records are matched to the correct historical grademap via AS-OF timestamp query (`WHERE received_at <= processing_time ORDER BY received_at DESC LIMIT 1`) instead of always using the current grademap
-- [ ] **TIME-02**: A configurable `grademap_propagation_delay` offset is applied to the AS-OF lookup to compensate for OEM pipeline lag (fruit already in transit when grademap changes)
+- [x] **TIME-01**: Fruit records are matched to the correct historical grademap via AS-OF timestamp query (`WHERE received_at <= processing_time ORDER BY received_at DESC LIMIT 1`) instead of always using the current grademap
+- [x] **TIME-02**: A configurable `grademap_propagation_delay` offset is applied to the AS-OF lookup to compensate for OEM pipeline lag (fruit already in transit when grademap changes)
 
 ## v2 Requirements
 
@@ -67,8 +67,8 @@
 | GRAD-01 | Phase 3 | Complete |
 | GRAD-02 | Phase 3 | Complete |
 | GRAD-03 | Phase 3 | Complete |
-| TIME-01 | Phase 4 | Pending |
-| TIME-02 | Phase 4 | Pending |
+| TIME-01 | Phase 4 | Complete |
+| TIME-02 | Phase 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 14 total
