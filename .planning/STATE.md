@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 04-timing-reconciliation-02-PLAN.md
-last_updated: "2026-03-08T00:09:44.312Z"
+stopped_at: Completed 04-timing-reconciliation-03-PLAN.md
+last_updated: "2026-03-08T00:14:37.726Z"
 last_activity: 2026-03-07 — Roadmap created
 progress:
   total_phases: 4
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 12
-  completed_plans: 11
+  completed_plans: 12
   percent: 0
 ---
 
@@ -61,6 +61,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03-grademap-persistence P03 | 4m | 2 tasks | 2 files |
 | Phase 04-timing-reconciliation P01 | 2m | 2 tasks | 1 files |
 | Phase 04-timing-reconciliation P02 | 3m | 2 tasks | 3 files |
+| Phase 04-timing-reconciliation P03 | 8m | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,8 @@ Recent decisions affecting current work:
 - [Phase 04-timing-reconciliation]: TestResolveGrademapID_NoRows accepts both (0,false,nil) and non-nil error — closed pool produces generic error not ErrNoRows; stub must not be fragile before implementation exists
 - [Phase 04-timing-reconciliation]: TestConfig_PropagationDelayZero handles empty string without ParseDuration — mirrors caller logic where empty string means no delay configured
 - [Phase 04-timing-reconciliation]: TestWriteBatch_GrademapID converted to t.Skip — Plan 01 stub compiled as a 4-arg writeBatch call; after Plan 02 resolved other undefined symbols it was the only compile blocker; t.Skip preserves intent for Plan 03 to restore
+- [Phase 04-timing-reconciliation]: writeBatch resolves grademap ID once per batch using min(SizerTime) as conservative anchor — avoids unsupported per-row queries inside pgx CopyFrom
+- [Phase 04-timing-reconciliation]: grademap_id column is NULLABLE with no DEFAULT — safe for existing deployments; rows before grademap history correctly get NULL
 
 ### Pending Todos
 
@@ -101,6 +104,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-08T00:09:44.308Z
-Stopped at: Completed 04-timing-reconciliation-02-PLAN.md
+Last session: 2026-03-08T00:14:37.722Z
+Stopped at: Completed 04-timing-reconciliation-03-PLAN.md
 Resume file: None
