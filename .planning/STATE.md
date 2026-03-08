@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 03-grademap-persistence-03-PLAN.md
-last_updated: "2026-03-07T23:24:36.751Z"
+stopped_at: Completed 04-timing-reconciliation-01-PLAN.md
+last_updated: "2026-03-08T00:04:38.509Z"
 last_activity: 2026-03-07 — Roadmap created
 progress:
   total_phases: 4
   completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 12
+  completed_plans: 10
   percent: 0
 ---
 
@@ -59,6 +59,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03-grademap-persistence P01 | 3m | 3 tasks | 4 files |
 | Phase 03-grademap-persistence P02 | 15m | 1 tasks | 3 files |
 | Phase 03-grademap-persistence P03 | 4m | 2 tasks | 2 files |
+| Phase 04-timing-reconciliation P01 | 2m | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -85,6 +86,8 @@ Recent decisions affecting current work:
 - [Phase 03-grademap-persistence]: gradeCh initialised in both Create() and newTestProcessorSmallQueue — test helper bypasses Create()
 - [Phase 03-grademap-persistence]: prevGrademapPayload not updated on INSERT failure — diff self-corrects on next successful write
 - [Phase 03-grademap-persistence]: CopyFrom error for breeze_grademap_changes is non-fatal — audit log pattern, grademap row already committed
+- [Phase 04-timing-reconciliation]: TestResolveGrademapID_NoRows accepts both (0,false,nil) and non-nil error — closed pool produces generic error not ErrNoRows; stub must not be fragile before implementation exists
+- [Phase 04-timing-reconciliation]: TestConfig_PropagationDelayZero handles empty string without ParseDuration — mirrors caller logic where empty string means no delay configured
 
 ### Pending Todos
 
@@ -96,6 +99,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-07T23:21:26.178Z
-Stopped at: Completed 03-grademap-persistence-03-PLAN.md
+Last session: 2026-03-08T00:04:38.504Z
+Stopped at: Completed 04-timing-reconciliation-01-PLAN.md
 Resume file: None
