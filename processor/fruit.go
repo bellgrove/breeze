@@ -75,6 +75,7 @@ type Fruit struct {
 	OtherDefects   []string
 	PrimaryReason  string
 	OtherReason    []string
+	GrademapID     *int64 // nil when no matching breeze_grademap row
 }
 
 func Columns() []string {
@@ -134,6 +135,7 @@ func Columns() []string {
 		"other_defects",
 		"primary_reason",
 		"other_reasons",
+		"grademap_id",
 	}
 }
 
@@ -194,6 +196,7 @@ func (a *Fruit) AsRow() ([]any, error) {
 		a.OtherDefects,
 		a.PrimaryReason,
 		a.OtherReason,
+		a.GrademapID,
 	}, nil
 }
 
